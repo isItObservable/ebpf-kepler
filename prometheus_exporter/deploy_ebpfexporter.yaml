@@ -1,0 +1,96 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  creationTimestamp: null
+  labels:
+    app: bpf-exporter
+  name: bpf-exporter
+spec:
+  selector:
+    matchLabels:
+      app: bpf-exporter
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: bpf-exporter
+      annotations:
+        prometheus.io/scrape: 'true'
+        prometheus.io/port: '9435'
+    spec:
+      hostNetwork: true
+      hostPID: true
+      containers:
+      - image: hrexed/ebpf_exporter_v2:latest
+        name: bpf-exporter
+        args: [--config.file, "/etc/ebpfexporter/config.yaml"]
+        # command: ["sleep", "infinity"]
+        ports:
+        - containerPort: 9435
+          name: metrics
+        resources: {}
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - name: config
+          mountPath: /etc/ebpfexporter
+        - mountPath: /lib/modules
+          name: mod
+        - mountPath: /usr/src
+          name: src
+        - mountPath: /sys
+          name: sys
+      volumes:
+      - name: config
+        configMap:
+          name: bpf-exporter-config
+      - hostPath:
+          path: /lib/modules
+          type: ""
+        name: mod
+      - hostPath:
+          path: /usr/src
+          type: ""
+        name: src
+      - hostPath:
+          path: /sys
+          type: ""
+        name: sys
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: bpf-exporter
+  name: tracer-service
+  annotations:
+    metrics.dynatrace.com/port: '9435'
+    metrics.dynatrace.com/scrape: 'true'
+    metrics.dynatrace.com/path: '/metrics'
+    prometheus.io/scrape: 'true'
+    prometheus.io/scheme: 'http'
+    prometheus.io/port: '9435'
+    prometheus.io/path: '/metrics'
+spec:
+  clusterIP: None
+  ports:
+  - name: metrics
+    port: 9435
+    targetPort: metrics
+    protocol: TCP
+  selector:
+    app: bpf-exporter
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: tracer-servicemon
+  labels:
+    release: prometheus
+spec:
+  endpoints:
+  - interval: 10s
+    port: metrics
+  selector:
+    matchLabels:
+      app: bpf-exporter
