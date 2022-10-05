@@ -112,7 +112,6 @@ CLUSTERID=$(kubectl get namespace kube-system -o jsonpath='{.metadata.uid}')
 CLUSTERNAME="YOUR OWN NAME"
 sed -i "s,CLUSTER_ID_TO_REPLACE,$CLUSTERID," kubernetes-manifests/openTelemetry-sidecar.yaml
 sed -i "s,CLUSTER_NAME_TO_REPLACE,$CLUSTERNAME," kubernetes-manifests/openTelemetry-sidecar.yaml
-sed -i "s,TEMPO_TO_REPLACE,$TEMPO_SERICE_NAME," kubernetes-manifests/openTelemetry-manifest.yaml
 ```
 #### Deploy the OpenTelemetry Collector
 ```

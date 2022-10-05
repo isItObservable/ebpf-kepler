@@ -90,7 +90,7 @@ spec:
         traces:
           receivers: [otlp,zipkin]
           processors: [memory_limiter,k8sattributes,spanmetrics,batch]
-          exporters: [otlp, logging]
+          exporters: [logging]
         metrics:
           receivers: [otlp,prometheus]
           processors: [memory_limiter,k8sattributes,batch]
