@@ -8,13 +8,13 @@ This repository contains the files utilized during the tutorial presented in the
 What you will learn
 * How to use the cloud flare ebpf exporter
 
-This repository showcase the usage of the Cilium  with :
+This repository showcase the usage of the ebpf exporter  with :
 * The Otel-demo
 * The OpenTelemetry Operator
 * Nginx ingress controller
 * Prometheus
 * Grafana
-* CloudFlare ebpf exporter
+
 
 ## Prerequisite
 The following tools need to be install on your machine :
