@@ -42,15 +42,14 @@ gcloud services enable monitoring.googleapis.com \
 ### 2.Create a GKE cluster
 ```
 ZONE=europe-west3-a
-NAME=isitobservable-cilium
+NAME=isitobservable-ebpf
 gcloud container clusters create "${NAME}" \
- --node-taints node.cilium.io/agent-not-ready=true:NoExecute \
  --zone ${ZONE} --machine-type=e2-standard-2 --num-nodes=4
 ```
 ### 3.Clone the Github Repository
 ```
-git clone https://github.com/isItObservable/Cilium
-cd Cilium
+https://github.com/isItObservable/ebpf-exporter
+cd ebpf-exporter
 ```
 ### 4.Deploy Nginx Ingress Controller
 ```
@@ -69,7 +68,7 @@ IP=$(kubectl get svc ingress-nginx-controller -n ingress-nginx -ojson | jq -j '.
 
 update the following files to update the ingress definitions :
 ```
-sed -i "s,IP_TO_REPLACE,$IP," kubernetes-manifests/k8s-manifest.yaml
+sed -i "s,IP_TO_REPLACE,$IP," kubernetes-manifests/K8sdemo.yaml
 sed -i "s,IP_TO_REPLACE,$IP," grafana/ingress.yaml
 ```
 ### 5.Prometheus
@@ -78,11 +77,11 @@ sed -i "s,IP_TO_REPLACE,$IP," grafana/ingress.yaml
  ```
 helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
 helm repo update
-helm install prometheus prometheus-community/kube-prometheus-stack  
+helm install prometheus prometheus-community/kube-prometheus-stack  --set kubeStateMetrics.enabled=false --set nodeExporter.enabled=false
 ```
 #### 2. Deploy the grafana ingress
 ```
-kubetl apply -f grafana/ingress.yaml 
+kubectl apply -f grafana/ingress.yaml 
 ```
 
 
@@ -109,7 +108,7 @@ kubectl apply -f https://github.com/open-telemetry/opentelemetry-operator/releas
 #### Udpate the openTelemetry manifest file
 ```
 CLUSTERID=$(kubectl get namespace kube-system -o jsonpath='{.metadata.uid}')
-CLUSTERNAME="YOUR OWN NAME"
+CLUSTERNAME="$NAME"
 sed -i "s,CLUSTER_ID_TO_REPLACE,$CLUSTERID," kubernetes-manifests/openTelemetry-sidecar.yaml
 sed -i "s,CLUSTER_NAME_TO_REPLACE,$CLUSTERNAME," kubernetes-manifests/openTelemetry-sidecar.yaml
 ```
@@ -121,11 +120,11 @@ kubectl apply -f kubernetes-manifests/openTelemetry-manifest.yaml -n otel
 ```
 ### 8. Deploy the otel-demo
 ```
-VERSION=v0.4.0-alpha
+VERSION=v0.5.0-alpha
+kubectl create ns otel-demo
 sed -i "s,VERSION_TO_REPLACE,$VERSION," kubernetes-manifests/K8sdemo.yaml
-sed -i "s,TEMPO_TO_REPLACE,$TEMPO_SERICE_NAME," kubernetes-manifests/openTelemetry-manifest.yaml
 kubectl apply -f kubernetes-manifests/openTelemetry-sidecar.yaml -n otel-demo
-kubectl apply -f K8sdemo.yaml -n otel-demo
+kubectl apply -f kubernetes-manifests/K8sdemo.yaml -n otel-demo
 ```
 
 ### 9. Deploy the ebpf Exporter

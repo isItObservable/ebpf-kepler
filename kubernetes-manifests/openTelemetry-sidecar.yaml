@@ -36,10 +36,10 @@ spec:
            operations:
              - action: add_label
                new_label:  k8s.cluster.name
-               new_value: observek8s
+               new_value: CLUSTER_NAME_TO_REPLACE
              - action: add_label
                new_label: dt.kubernetes.config.id
-               new_value: a1d81911-b6bf-4f47-874a-41da3fecbc7e
+               new_value: CLUSTER_ID_TO_REPLACE
              - action: update_label
                label: system_uuid
                new_label: dt.kubernetes.node.system_uuid
