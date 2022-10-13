@@ -6,7 +6,7 @@ This repository contains the files utilized during the tutorial presented in the
 <p align="center"><img src="/image/ebpf.png" width="40%" alt="ebpf Logo" /></p>
 
 What you will learn
-* How to use the cloud flare ebpf exporter
+* How to use the [Kepler](https://sustainable-computing.io/html/index.html)
 
 This repository showcase the usage of the ebpf exporter  with :
 * The Otel-demo
@@ -14,7 +14,9 @@ This repository showcase the usage of the ebpf exporter  with :
 * Nginx ingress controller
 * Prometheus
 * Grafana
+* Dynatrace
 
+We will send the kepler metrics to dynatrace and build a short dashboard.
 
 ## Prerequisite
 The following tools need to be install on your machine :
@@ -83,9 +85,26 @@ helm install prometheus prometheus-community/kube-prometheus-stack  --set kubeSt
 ```
 kubectl apply -f grafana/ingress.yaml 
 ```
+### 6. Dynatrace
+#### 1. Dynatrace Tenant - start a trial
+If you don't have any Dyntrace tenant , then i suggest to create a trial using the following link : [Dynatrace Trial](https://bit.ly/3KxWDvY)
+Once you have your Tenant save the Dynatrace (including https) tenant URL in the variable `DT_TENANT_URL` (for example : https://dedededfrf.live.dynatrace.com)
+```
+DT_TENANT_URL=<YOUR TENANT URL>
+```
 
+##### Generate Token to ingest data
+Create a Dynatrace token with the following scope:
+* ingest metrics
+* ingest OpenTelemetry traces
+<p align="center"><img src="/image/data_ingest.png" width="40%" alt="data token" /></p>
+Save the value of the token . We will use it later to store in a k8S secret
 
-### 6. Install the OpenTelemetry Operator
+```
+DATA_INGEST_TOKEN=<YOUR TOKEN VALUE>
+```
+
+### 7. Install the OpenTelemetry Operator
 
 ####  1. Deploy the cert-manager
 ```
@@ -111,6 +130,8 @@ CLUSTERID=$(kubectl get namespace kube-system -o jsonpath='{.metadata.uid}')
 CLUSTERNAME="$NAME"
 sed -i "s,CLUSTER_ID_TO_REPLACE,$CLUSTERID," kubernetes-manifests/openTelemetry-sidecar.yaml
 sed -i "s,CLUSTER_NAME_TO_REPLACE,$CLUSTERNAME," kubernetes-manifests/openTelemetry-sidecar.yaml
+sed -i "s,DT_TOKEN,$DATA_INGEST_TOKEN," kubernetes-manifests/openTelemetry-manifest.yaml
+sed -i "s,DT_TENANT_URL,$DT_TENANT_URL," kubernetes-manifests/openTelemetry-manifest.yaml
 ```
 #### Deploy the OpenTelemetry Collector
 ```
@@ -127,13 +148,17 @@ kubectl apply -f kubernetes-manifests/openTelemetry-sidecar.yaml -n otel-demo
 kubectl apply -f kubernetes-manifests/K8sdemo.yaml -n otel-demo
 ```
 
-### 9. Deploy the ebpf Exporter
+### 9. Deploy the Kepler
 ```
-kubectl create ns ebpf
-kubectl apply -f prometheus_exporter/config_map_demo.yaml -n ebpf
-kubectl apply -f prometheus_exporter/deploy_ebpfexporter.yaml -n ebpf
-kubectl apply -f prometheus_exporter/deploy_ebpfexporter.yaml -n ebpf
+kubectl apply -f prometheus_exporter/deploy.yaml
+kubectl apply -f prometheus_exporter/service_monitor.yaml
+kubectl apply -f prometheus_exporter/kepler_dashboard.yaml
 ```
 
-
+### 10. Update the Collector pipeline to send the data to Dynatrace
+```
+kubectl apply -f prometheus_exporter/deploy.yaml
+kubectl apply -f prometheus_exporter/service_monitor.yaml
+kubectl apply -f prometheus_exporter/kepler_dashboard.yaml
+```
 

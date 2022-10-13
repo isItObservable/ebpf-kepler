@@ -27,6 +27,20 @@ spec:
           grpc:
             endpoint: "localhost:65535"
 
+      prometheus:
+        config:
+          scrape_configs:
+            - job_name: 'kepler'
+              scrape_interval: 3s
+              static_configs:
+                - targets: ['kepler-exporter.kepler.svc:9102']
+                  relabelings:
+                    - action: replace
+                      regex: (.*)
+                      replacement: $1
+                      sourceLabels:
+                        - __meta_kubernetes_pod_node_name
+                      targetLabel: instance
     processors:
       batch:
         send_batch_max_size: 1000
