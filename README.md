@@ -1,14 +1,14 @@
 # Is it Observable
 <p align="center"><img src="/image/logo.png" width="40%" alt="Is It observable Logo" /></p>
 
-## Episode : What is Ebpf - the CloudFlare epbf exporter 
+## Episode : What is Ebpf - tutorial using Kepler
 This repository contains the files utilized during the tutorial presented in the dedicated IsItObservable episode related to ebpf.
 <p align="center"><img src="/image/ebpf.png" width="40%" alt="ebpf Logo" /></p>
 
 What you will learn
 * How to use the [Kepler](https://sustainable-computing.io/html/index.html)
 
-This repository showcase the usage of the ebpf exporter  with :
+This repository showcase the usage of Kepler  with :
 * The Otel-demo
 * The OpenTelemetry Operator
 * Nginx ingress controller
